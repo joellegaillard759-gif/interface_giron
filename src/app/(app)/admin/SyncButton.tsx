@@ -12,14 +12,19 @@ export default function SyncButton() {
     setLoading(true)
     setResult(null)
 
-    const res = await fetch('/api/sync', { method: 'POST' })
-    const data = await res.json()
+    try {
+      const res = await fetch('/api/sync', { method: 'POST' })
+      let data: Record<string, unknown> = {}
+      try { data = await res.json() } catch {}
 
-    if (res.ok) {
-      setResult(`✓ ${data.created} créées, ${data.updated} mises à jour, ${data.usersCreated} invitations envoyées`)
-      router.refresh()
-    } else {
-      setResult(`Erreur : ${data.error}`)
+      if (res.ok) {
+        setResult(`✓ ${data.created} créées, ${data.updated} mises à jour, ${data.usersCreated} invitations envoyées`)
+        router.refresh()
+      } else {
+        setResult(`Erreur ${res.status} : ${data.error ?? 'réponse vide'}`)
+      }
+    } catch (e) {
+      setResult(`Erreur réseau : ${e instanceof Error ? e.message : String(e)}`)
     }
     setLoading(false)
   }
