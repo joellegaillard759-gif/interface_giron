@@ -13,10 +13,19 @@ export default async function AdminPage() {
   }
 
   const adminSupabase = createAdminClient()
-  const { data: bases } = await adminSupabase
-    .from('airtable_bases')
-    .select('*')
-    .order('nom')
+  const [{ data: bases }, { data: userBases }, { data: { users } }] = await Promise.all([
+    adminSupabase.from('airtable_bases').select('*').order('nom'),
+    adminSupabase.from('user_bases').select('base_id, user_id'),
+    adminSupabase.auth.admin.listUsers(),
+  ])
+
+  const userById = Object.fromEntries((users ?? []).map(u => [u.id, u.email ?? u.id]))
+
+  const emailsByBaseId: Record<string, string[]> = {}
+  for (const ub of userBases ?? []) {
+    if (!emailsByBaseId[ub.base_id]) emailsByBaseId[ub.base_id] = []
+    emailsByBaseId[ub.base_id].push(userById[ub.user_id] ?? ub.user_id)
+  }
 
   return (
     <div>
@@ -36,7 +45,7 @@ export default async function AdminPage() {
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="text-left px-4 py-3 text-gray-500 font-medium">Concours</th>
-                <th className="text-left px-4 py-3 text-gray-500 font-medium">Base ID</th>
+                <th className="text-left px-4 py-3 text-gray-500 font-medium">Accès</th>
                 <th className="text-left px-4 py-3 text-gray-500 font-medium">Statut</th>
                 <th className="text-left px-4 py-3 text-gray-500 font-medium">Synchro</th>
               </tr>
@@ -45,7 +54,11 @@ export default async function AdminPage() {
               {bases.map((base: AirtableBase) => (
                 <tr key={base.id} className="border-b border-gray-50 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">{base.nom_concours || base.nom}</td>
-                  <td className="px-4 py-3 text-gray-400 font-mono text-xs">{base.airtable_base_id}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">
+                    {(emailsByBaseId[base.id] ?? []).length > 0
+                      ? emailsByBaseId[base.id].map(e => <div key={e}>{e}</div>)
+                      : <span className="text-gray-300">—</span>}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       base.statut === 'Clôturé'
