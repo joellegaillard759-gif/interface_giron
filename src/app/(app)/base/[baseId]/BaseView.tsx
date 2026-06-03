@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import { Building2, Users, Trophy, Calendar, Clock, Star, FileText } from 'lucide-react'
 import DataTable from '@/components/DataTable'
 import DetailPanel from '@/components/DetailPanel'
@@ -29,6 +28,7 @@ interface BaseViewProps {
 export default function BaseView({ base, section }: BaseViewProps) {
   const [records, setRecords] = useState<AirtableRecord[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<AirtableRecord | null>(null)
 
   const sectionConfig = SECTIONS.find(s => s.key === section)
@@ -38,6 +38,7 @@ export default function BaseView({ base, section }: BaseViewProps) {
   const fetchRecords = useCallback(async () => {
     if (!tableId) return
     setLoading(true)
+    setError(null)
     setRecords([])
     try {
       let all: AirtableRecord[] = []
@@ -45,12 +46,23 @@ export default function BaseView({ base, section }: BaseViewProps) {
       do {
         const url = `/api/airtable/${base.airtable_base_id}/${tableId}?pageSize=100${offset ? `&offset=${offset}` : ''}`
         const res = await fetch(url)
-        if (!res.ok) break
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          const msg = body?.error?.message ?? body?.error ?? `Erreur ${res.status}`
+          setError(msg)
+          break
+        }
         const data = await res.json()
+        if (data.error) {
+          setError(data.error?.message ?? JSON.stringify(data.error))
+          break
+        }
         all = all.concat(data.records ?? [])
         offset = data.offset
       } while (offset)
       setRecords(all)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
     } finally {
       setLoading(false)
     }
@@ -62,42 +74,38 @@ export default function BaseView({ base, section }: BaseViewProps) {
   }, [fetchRecords])
 
   return (
-    <>
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-          <Link href="/dashboard" style={{ color: 'var(--ink-500)', fontSize: '13px', textDecoration: 'none' }}>
-            Mes concours
-          </Link>
-          <span style={{ color: 'var(--ink-300)', fontSize: '13px' }}>/</span>
-          <Link href={`/base/${base.airtable_base_id}`} style={{ color: 'var(--ink-500)', fontSize: '13px', textDecoration: 'none' }}>
-            {base.nom_concours || base.nom}
-          </Link>
-          <span style={{ color: 'var(--ink-300)', fontSize: '13px' }}>/</span>
-          <span style={{ color: 'var(--ink-900)', fontSize: '13px', fontWeight: 600 }}>{sectionLabel}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div style={{
+      margin: '-28px -32px',
+      height: 'calc(100% + 56px)',
+      display: 'grid',
+      gridTemplateColumns: selected ? '1fr 380px' : '1fr',
+      transition: 'grid-template-columns 0.2s cubic-bezier(.2,.7,.3,1)',
+      overflow: 'hidden',
+    }}>
+      <div style={{ overflowY: 'auto', padding: '28px 32px' }}>
+        <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <h1 className="h1">{sectionLabel}</h1>
           {!loading && records.length > 0 && (
             <span className="tag">{records.length}</span>
           )}
           <StatusBadge statut={base.statut} />
         </div>
+
+        {!tableId ? (
+          <div style={{ padding: '80px 0', textAlign: 'center', color: 'var(--ink-400)', fontSize: '13px' }}>
+            Table non configurée pour cette section.
+          </div>
+        ) : (
+          <DataTable
+            records={records}
+            loading={loading}
+            onRowClick={setSelected}
+            selectedId={selected?.id}
+          />
+        )}
       </div>
 
-      {!tableId ? (
-        <div style={{ padding: '80px', textAlign: 'center', color: 'var(--ink-400)', fontSize: '13px' }}>
-          Table non configurée pour cette section.
-        </div>
-      ) : (
-        <DataTable
-          records={records}
-          loading={loading}
-          onRowClick={setSelected}
-          selectedId={selected?.id}
-        />
-      )}
-
-      <DetailPanel record={selected} onClose={() => setSelected(null)} />
-    </>
+      {selected && <DetailPanel record={selected} onClose={() => setSelected(null)} />}
+    </div>
   )
 }

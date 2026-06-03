@@ -30,8 +30,16 @@ async function fetchCount(baseId: string, tableId: string): Promise<number> {
   do {
     const url = `/api/airtable/${baseId}/${tableId}?pageSize=100${offset ? `&offset=${offset}` : ''}`
     const res = await fetch(url)
-    if (!res.ok) break
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      console.error(`[fetchCount] ${baseId}/${tableId} → ${res.status}`, body)
+      break
+    }
     const data = await res.json()
+    if (data.error) {
+      console.error(`[fetchCount] ${baseId}/${tableId} → Airtable error`, data.error)
+      break
+    }
     count += data.records?.length ?? 0
     offset = data.offset
   } while (offset)
@@ -74,22 +82,11 @@ export default function DashboardConcours({ base }: { base: AirtableBase }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-          <Link href="/dashboard" style={{ color: 'var(--ink-500)', fontSize: '13px', textDecoration: 'none' }}>
-            Mes concours
-          </Link>
-          <span style={{ color: 'var(--ink-300)', fontSize: '13px' }}>/</span>
-          <span style={{ color: 'var(--ink-900)', fontSize: '13px', fontWeight: 600 }}>
-            {base.nom_concours || base.nom}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h1 className="h-display-sm" style={{ color: 'var(--ink-900)' }}>
-            {base.nom_concours || base.nom}
-          </h1>
-          <StatusBadge statut={base.statut} />
-        </div>
+      <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <h1 className="h-display-sm" style={{ color: 'var(--ink-900)' }}>
+          {base.nom_concours || base.nom}
+        </h1>
+        <StatusBadge statut={base.statut} />
       </div>
 
       {/* Stats */}

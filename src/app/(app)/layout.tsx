@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import LogoutButton from './LogoutButton'
+import Sidebar from './Sidebar'
+import Topbar from './Topbar'
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL!
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -8,25 +11,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/login')
 
-  const isAdmin = user.email === process.env.ADMIN_EMAIL
+  const isAdmin = user.email === ADMIN_EMAIL
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <span className="font-semibold text-gray-900">Plateforme Giron</span>
-          <div className="flex items-center gap-4">
-            {isAdmin && (
-              <a href="/admin" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                Admin
-              </a>
-            )}
-            <span className="text-sm text-gray-400">{user.email}</span>
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
-      <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
+    <div className="app-shell">
+      <Sidebar isAdmin={isAdmin} userEmail={user.email ?? ''} />
+      <div className="app-canvas">
+        <Topbar userEmail={user.email ?? ''} />
+        <main className="app-scroll">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

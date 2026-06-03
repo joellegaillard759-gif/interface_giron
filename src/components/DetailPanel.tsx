@@ -12,44 +12,39 @@ export default function DetailPanel({ record, onClose }: DetailPanelProps) {
   if (!record) return null
 
   return (
-    <>
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.15)',
-          zIndex: 40, animation: 'fadeIn 0.15s ease',
-        }}
-      />
+    <div style={{
+      borderLeft: '1px solid var(--hairline)',
+      background: 'var(--surface)',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      overflow: 'hidden',
+    }}>
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, width: '460px',
-        background: 'var(--surface)', borderLeft: '1px solid var(--hairline)',
-        boxShadow: 'var(--shadow-lg)', zIndex: 50,
-        display: 'flex', flexDirection: 'column',
-        animation: 'slideInRight 0.2s cubic-bezier(.2,.7,.3,1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 20px',
+        borderBottom: '1px solid var(--hairline)',
+        flexShrink: 0,
       }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', borderBottom: '1px solid var(--hairline)',
-          flexShrink: 0,
-        }}>
-          <span className="h3">Détail</span>
-          <button className="iconbtn ghost" onClick={onClose}>
-            <X size={16} strokeWidth={1.6} />
-          </button>
-        </div>
+        <span className="h3">Détail</span>
+        <button className="iconbtn ghost" onClick={onClose}>
+          <X size={16} strokeWidth={1.6} />
+        </button>
+      </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {Object.entries(record.fields).map(([key, val]) => (
-              <div key={key} className="field">
-                <div className="field-label">{key}</div>
-                <FieldValue value={val} />
-              </div>
-            ))}
-          </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {Object.entries(record.fields).map(([key, val]) => (
+            <div key={key} className="field">
+              <div className="field-label">{key}</div>
+              <FieldValue value={val} />
+            </div>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

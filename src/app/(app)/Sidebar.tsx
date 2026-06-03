@@ -1,7 +1,6 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   LayoutDashboard, ShieldCheck, Music,
@@ -9,6 +8,7 @@ import {
   ChevronLeft,
 } from 'lucide-react'
 import LogoutButton from './LogoutButton'
+import { useBaseName } from '@/hooks/useBaseName'
 
 const GLOBAL_NAV = [
   { href: '/dashboard', label: 'Mes concours', icon: LayoutDashboard },
@@ -37,15 +37,7 @@ export default function Sidebar({ isAdmin, userEmail }: SidebarProps) {
   const currentSection = pathname.match(/^\/base\/[^/]+\/([^/]+)/)?.[1] ?? null
   const inBase = !!currentBaseId
 
-  const [baseName, setBaseName] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!currentBaseId) { setBaseName(null); return }
-    fetch(`/api/base-meta/${currentBaseId}`)
-      .then(r => r.json())
-      .then(d => setBaseName(d.nom_concours || d.nom || null))
-      .catch(() => {})
-  }, [currentBaseId])
+  const baseName = useBaseName(currentBaseId)
 
   const initials = userEmail.slice(0, 2).toUpperCase()
 

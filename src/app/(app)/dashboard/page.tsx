@@ -21,9 +21,11 @@ export default async function DashboardPage() {
 
   if (!bases || bases.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        <p className="text-lg">Aucune base disponible pour ton compte.</p>
-        <p className="text-sm mt-1">Contacte l&apos;administrateur pour obtenir un accès.</p>
+      <div style={{ textAlign: 'center', padding: '80px 0' }}>
+        <p style={{ color: 'var(--ink-400)', fontSize: '15px' }}>Aucune base disponible pour ton compte.</p>
+        <p className="small" style={{ color: 'var(--ink-400)', marginTop: '4px' }}>
+          Contacte l&apos;administrateur pour obtenir un accès.
+        </p>
       </div>
     )
   }
@@ -34,16 +36,17 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Mes concours</h1>
+      <h1 className="h1" style={{ marginBottom: '24px' }}>Mes concours</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {bases.map((base: AirtableBase) => (
           <a
             key={base.id}
             href={`/base/${base.airtable_base_id}`}
-            className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+            className="card hover:border-[var(--accent)]"
+            style={{ display: 'block', padding: '20px', textDecoration: 'none', transition: 'all 0.12s cubic-bezier(.2,.7,.3,1)' }}
           >
-            <div className="flex items-start justify-between mb-3">
-              <span className="text-sm font-medium text-gray-900">{base.nom_concours || base.nom}</span>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+              <span className="h3">{base.nom_concours || base.nom}</span>
               <StatusBadge statut={base.statut} />
             </div>
           </a>
