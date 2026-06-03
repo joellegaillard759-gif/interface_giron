@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -15,31 +17,14 @@ export default function LoginPage() {
     setError(null)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-    })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError(error.message)
+      setError('Email ou mot de passe incorrect.')
     } else {
-      setSent(true)
+      router.push('/dashboard')
     }
     setLoading(false)
-  }
-
-  if (sent) {
-    return (
-      <main style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
-        <div className="card" style={{ maxWidth: '380px', width: '100%', padding: '32px', textAlign: 'center' }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📬</div>
-          <h2 className="h3" style={{ marginBottom: '8px' }}>Lien envoyé</h2>
-          <p className="small" style={{ color: 'var(--ink-500)' }}>
-            Vérifie ta boîte mail ({email}) et clique sur le lien pour te connecter.
-          </p>
-        </div>
-      </main>
-    )
   }
 
   return (
@@ -47,7 +32,7 @@ export default function LoginPage() {
       <div className="card" style={{ maxWidth: '380px', width: '100%', padding: '32px' }}>
         <h1 className="h-display" style={{ marginBottom: '4px' }}>Plateforme Giron</h1>
         <p className="eyebrow" style={{ marginBottom: '24px', color: 'var(--ink-500)' }}>
-          Entre ton email pour recevoir un lien de connexion
+          Connexion
         </p>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -60,6 +45,15 @@ export default function LoginPage() {
             className="input"
             style={{ width: '100%' }}
           />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mot de passe"
+            required
+            className="input"
+            style={{ width: '100%' }}
+          />
           {error && <p className="small" style={{ color: 'var(--accent)' }}>{error}</p>}
           <button
             type="submit"
@@ -67,7 +61,7 @@ export default function LoginPage() {
             className="btn primary"
             style={{ width: '100%', justifyContent: 'center' }}
           >
-            {loading ? 'Envoi…' : 'Recevoir le lien'}
+            {loading ? 'Connexion…' : 'Se connecter'}
           </button>
         </form>
       </div>
