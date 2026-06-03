@@ -9,8 +9,8 @@ const COLS = ['Candidat.e', 'Instrument', 'Société']
 
 const GROUPS = [
   { key: 'none',              label: 'Tous' },
-  { key: 'Catégorie',         label: 'Catégorie' },
-  { key: 'Société',           label: 'Société' },
+  { key: 'Nom catégorie',     label: 'Catégorie' },
+  { key: 'Société [txt]',     label: 'Société' },
   { key: 'Type de concours',  label: 'Type' },
 ]
 
