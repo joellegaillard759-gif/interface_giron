@@ -26,12 +26,19 @@ export async function POST(_req: Request, { params }: { params: Promise<{ baseId
 
     const { data: { users: allUsers } } = await adminSupabase.auth.admin.listUsers()
     let invited = 0
+    const errors: string[] = []
+
+    const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://plateforme-giron.vercel.app'}/auth/callback`
 
     for (const email of emails) {
       let targetUser = allUsers.find((u) => u.email === email)
 
       if (!targetUser) {
-        const { data } = await adminSupabase.auth.admin.inviteUserByEmail(email)
+        const { data, error } = await adminSupabase.auth.admin.inviteUserByEmail(email, { redirectTo })
+        if (error) {
+          errors.push(`${email} : ${error.message}`)
+          continue
+        }
         targetUser = data?.user ?? undefined
         if (targetUser) invited++
       }
@@ -41,6 +48,10 @@ export async function POST(_req: Request, { params }: { params: Promise<{ baseId
           .from('user_bases')
           .upsert({ user_id: targetUser.id, base_id: base.id })
       }
+    }
+
+    if (errors.length > 0) {
+      return NextResponse.json({ error: errors.join(' | ') }, { status: 500 })
     }
 
     return NextResponse.json({ ok: true, invited })

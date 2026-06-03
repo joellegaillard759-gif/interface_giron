@@ -39,7 +39,11 @@ export default function InviteButton({ baseId, emails }: { baseId: string; email
       >
         {loading ? 'Envoi…' : 'Inviter'}
       </button>
-      {result && <p className="text-xs text-gray-400">{result}</p>}
+      {result && (
+        <p className={`text-xs font-medium mt-1 ${result.startsWith('Erreur') ? 'text-red-600' : 'text-green-700'}`}>
+          {result}
+        </p>
+      )}
     </div>
   )
 }
