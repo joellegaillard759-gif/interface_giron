@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import SyncButton from './SyncButton'
 import type { AirtableBase } from '@/types'
@@ -11,7 +12,8 @@ export default async function AdminPage() {
     redirect('/dashboard')
   }
 
-  const { data: bases } = await supabase
+  const adminSupabase = createAdminClient()
+  const { data: bases } = await adminSupabase
     .from('airtable_bases')
     .select('*')
     .order('nom')
