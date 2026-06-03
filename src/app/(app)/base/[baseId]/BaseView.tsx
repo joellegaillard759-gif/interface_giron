@@ -100,8 +100,8 @@ export default function BaseView({ base, section }: BaseViewProps) {
           <InscriptionsTable
             records={records}
             loading={loading}
-            onRowClick={setSelected}
             selectedId={selected?.id}
+            baseId={base.airtable_base_id}
           />
         ) : (
           <DataTable

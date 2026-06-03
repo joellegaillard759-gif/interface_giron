@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { formatValue, type AirtableRecord } from './DataTable'
 
@@ -16,11 +17,13 @@ const GROUPS = [
 interface InscriptionsTableProps {
   records: AirtableRecord[]
   loading: boolean
-  onRowClick: (record: AirtableRecord) => void
+  onRowClick?: (record: AirtableRecord) => void
   selectedId?: string | null
+  baseId?: string
 }
 
-export default function InscriptionsTable({ records, loading, onRowClick, selectedId }: InscriptionsTableProps) {
+export default function InscriptionsTable({ records, loading, onRowClick, selectedId, baseId }: InscriptionsTableProps) {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [groupBy, setGroupBy] = useState('none')
 
@@ -135,7 +138,13 @@ export default function InscriptionsTable({ records, loading, onRowClick, select
                     {rows.map(record => (
                       <tr
                         key={record.id}
-                        onClick={() => onRowClick(record)}
+                        onClick={() => {
+                          if (baseId) {
+                            router.push(`/base/${baseId}/inscriptions/${record.id}`)
+                          } else {
+                            onRowClick?.(record)
+                          }
+                        }}
                         style={{
                           cursor: 'pointer',
                           background: selectedId === record.id ? 'var(--accent-50)' : undefined,

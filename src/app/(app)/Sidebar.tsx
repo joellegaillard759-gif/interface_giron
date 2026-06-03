@@ -106,7 +106,11 @@ export default function Sidebar({ isAdmin, userEmail }: SidebarProps) {
                 href={`/base/${currentBaseId}/${key}`}
                 label={label}
                 icon={<Icon size={16} strokeWidth={1.6} />}
-                active={currentSection === key || (!currentSection && key === 'inscriptions' && pathname === `/base/${currentBaseId}`)}
+                active={
+    currentSection === key ||
+    (!currentSection && key === 'inscriptions' && pathname === `/base/${currentBaseId}`) ||
+    (key === 'inscriptions' && pathname.startsWith(`/base/${currentBaseId}/inscriptions/`))
+  }
               />
             ))}
           </>
