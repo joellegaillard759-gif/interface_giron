@@ -51,13 +51,12 @@ function CardCoordonnees({
   const [email, setEmail] = useState(rawStr(record.fields['Email']))
   const [tel, setTel] = useState(rawStr(record.fields['Téléphone']))
   const [adresse, setAdresse] = useState(rawStr(record.fields['Adresse']))
-  const [numMembre, setNumMembre] = useState(rawStr(record.fields['Numéro de membre']))
 
   useEffect(() => {
+    console.log('[Coordonnées] noms de champs disponibles:', Object.keys(record.fields))
     setEmail(rawStr(record.fields['Email']))
     setTel(rawStr(record.fields['Téléphone']))
     setAdresse(rawStr(record.fields['Adresse']))
-    setNumMembre(rawStr(record.fields['Numéro de membre']))
     setEditing(false)
     setError(null)
   }, [record.id])
@@ -79,7 +78,6 @@ function CardCoordonnees({
                 Email: email || null,
                 Téléphone: tel || null,
                 Adresse: adresse || null,
-                'Numéro de membre': numMembre || null,
               },
             }],
           }),
@@ -145,12 +143,6 @@ function CardCoordonnees({
           ? <input className="input" value={adresse} onChange={e => setAdresse(e.target.value)} />
           : <div style={{ whiteSpace: 'pre-line' }}>{adresse}</div>}
 
-        <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Hash size={14} strokeWidth={1.6} /> N° de membre
-        </div>
-        {editing
-          ? <input className="input" value={numMembre} onChange={e => setNumMembre(e.target.value)} />
-          : <div className="num">{numMembre}</div>}
       </div>
     </div>
   )
@@ -230,6 +222,7 @@ function TabPartition({ record, base, onRecordUpdate }: {
   const [arrangeur, setArrangeur] = useState(rawStr(record.fields['Arrangeur']))
 
   useEffect(() => {
+    console.log('[Partition] noms de champs disponibles:', Object.keys(record.fields))
     setTitre(rawStr(record.fields['Titre']))
     setCompositeur(rawStr(record.fields['Compositeur']))
     setArrangeur(rawStr(record.fields['Arrangeur']))
@@ -436,7 +429,7 @@ export default function CandidatDetail({ base, record, onRecordUpdate }: Candida
 
   const categorie = formatValue(record.fields['Nom catégorie'])
   const typeConcours = formatValue(record.fields['Type de concours'])
-  const instrument = formatValue(record.fields['Instrument'])
+  const instrument = formatValue(record.fields['Instrument [txt]'])
   const societe = formatValue(record.fields['Société [txt]'])
   const subtitleParts = [instrument, societe].filter(v => v !== '—')
 

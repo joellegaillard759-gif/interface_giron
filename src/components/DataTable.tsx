@@ -138,16 +138,24 @@ export default function DataTable({ records, loading, onRowClick, selectedId }: 
   )
 }
 
+function isAirtableId(s: string): boolean {
+  return /^rec[A-Za-z0-9]{10,}$/.test(s)
+}
+
 export function formatValue(val: unknown): string {
   if (val === null || val === undefined) return '—'
   if (typeof val === 'boolean') return val ? 'Oui' : 'Non'
-  if (typeof val === 'string' || typeof val === 'number') return String(val)
+  if (typeof val === 'string') return isAirtableId(val) ? '—' : val
+  if (typeof val === 'number') return String(val)
   if (Array.isArray(val)) {
-    return val.map(v =>
-      typeof v === 'object' && v !== null
-        ? (v as Record<string, unknown>).name ?? JSON.stringify(v)
-        : String(v)
-    ).join(', ')
+    const parts = val
+      .map(v =>
+        typeof v === 'object' && v !== null
+          ? String((v as Record<string, unknown>).name ?? '')
+          : String(v)
+      )
+      .filter(s => s && !isAirtableId(s))
+    return parts.length > 0 ? parts.join(', ') : '—'
   }
   return JSON.stringify(val)
 }
