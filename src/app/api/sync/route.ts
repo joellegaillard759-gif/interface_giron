@@ -80,7 +80,7 @@ export async function POST() {
       synced_at: new Date().toISOString(),
     }
 
-    const { data: existing } = await supabase
+    const { data: existing } = await adminSupabase
       .from('airtable_bases')
       .select('id')
       .eq('airtable_base_id', baseId)
@@ -89,16 +89,17 @@ export async function POST() {
     let dbBaseId: string
 
     if (existing) {
-      await supabase.from('airtable_bases').update(baseData).eq('id', existing.id)
+      await adminSupabase.from('airtable_bases').update(baseData).eq('id', existing.id)
       dbBaseId = existing.id
       updated++
     } else {
-      const { data: inserted } = await supabase
+      const { data: inserted, error: insertError } = await adminSupabase
         .from('airtable_bases')
         .insert(baseData)
         .select('id')
         .single()
-      dbBaseId = inserted!.id
+      if (insertError || !inserted) throw new Error(`Insert échoué : ${insertError?.message}`)
+      dbBaseId = inserted.id
       created++
     }
 
