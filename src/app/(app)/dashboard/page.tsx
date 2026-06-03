@@ -1,13 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import type { AirtableBase } from '@/types'
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL!
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: bases } = await supabase
+  const isAdmin = user.email === ADMIN_EMAIL
+  const client = isAdmin ? createAdminClient() : supabase
+
+  const { data: bases } = await client
     .from('airtable_bases')
     .select('*')
     .eq('actif', true)

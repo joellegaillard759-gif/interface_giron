@@ -14,6 +14,7 @@ export type AirtableBase = {
   table_passages: string | null
   webhooks: Record<string, string>
   liens: Record<string, string>
+  access_emails: string[]
   synced_at: string
 }
 

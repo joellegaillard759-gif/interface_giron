@@ -28,7 +28,7 @@ export async function POST() {
 
   const { records } = await res.json()
   const adminSupabase = createAdminClient()
-  let created = 0, updated = 0, usersCreated = 0
+  let created = 0, updated = 0
 
   for (const record of records) {
     const f = record.fields
@@ -63,6 +63,12 @@ export async function POST() {
       modification_manifestation: f['Lien modification manifestation'] ?? null,
     }
 
+    const accessEmails: string[] = []
+    for (let i = 1; i <= 5; i++) {
+      const email = f[`accès interface ${i}`]
+      if (email) accessEmails.push(email.trim())
+    }
+
     const baseData = {
       airtable_base_id: baseId,
       nom: f['Name'] ?? baseId,
@@ -77,6 +83,7 @@ export async function POST() {
       table_passages: f['Table passages'] ?? null,
       webhooks,
       liens,
+      access_emails: accessEmails,
       synced_at: new Date().toISOString(),
     }
 
@@ -86,11 +93,8 @@ export async function POST() {
       .eq('airtable_base_id', baseId)
       .single()
 
-    let dbBaseId: string
-
     if (existing) {
       await adminSupabase.from('airtable_bases').update(baseData).eq('id', existing.id)
-      dbBaseId = existing.id
       updated++
     } else {
       const { data: inserted, error: insertError } = await adminSupabase
@@ -99,39 +103,11 @@ export async function POST() {
         .select('id')
         .single()
       if (insertError || !inserted) throw new Error(`Insert échoué : ${insertError?.message}`)
-      dbBaseId = inserted.id
       created++
-    }
-
-    // Gérer les accès utilisateurs (accès interface 1 à 5)
-    const accessEmails: string[] = []
-    for (let i = 1; i <= 5; i++) {
-      const email = f[`accès interface ${i}`]
-      if (email) accessEmails.push(email.trim())
-    }
-
-    if (accessEmails.length > 0) {
-      const { data: allUsers } = await adminSupabase.auth.admin.listUsers()
-
-      for (const email of accessEmails) {
-        let targetUser = allUsers?.users.find((u) => u.email === email)
-
-        if (!targetUser) {
-          const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(email)
-          targetUser = invited?.user ?? undefined
-          usersCreated++
-        }
-
-        if (targetUser) {
-          await adminSupabase
-            .from('user_bases')
-            .upsert({ user_id: targetUser.id, base_id: dbBaseId })
-        }
-      }
     }
   }
 
-  return NextResponse.json({ ok: true, created, updated, usersCreated })
+  return NextResponse.json({ ok: true, created, updated })
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     console.error('[sync]', message)

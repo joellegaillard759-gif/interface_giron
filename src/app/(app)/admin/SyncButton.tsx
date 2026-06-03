@@ -18,7 +18,7 @@ export default function SyncButton() {
       try { data = await res.json() } catch {}
 
       if (res.ok) {
-        setResult(`✓ ${data.created} créées, ${data.updated} mises à jour, ${data.usersCreated} invitations envoyées`)
+        setResult(`✓ ${data.created} créées, ${data.updated} mises à jour`)
         router.refresh()
       } else {
         setResult(`Erreur ${res.status} : ${data.error ?? 'réponse vide'}`)

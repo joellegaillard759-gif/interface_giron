@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS airtable_bases (
   table_passages text,
   webhooks jsonb DEFAULT '{}',
   liens jsonb DEFAULT '{}',
+  access_emails jsonb DEFAULT '[]',
   synced_at timestamptz DEFAULT now(),
   created_at timestamptz DEFAULT now()
 );
