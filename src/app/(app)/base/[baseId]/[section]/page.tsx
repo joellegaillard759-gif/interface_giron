@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getBase } from '@/lib/getBase'
 import BaseView from '../BaseView'
 
-const VALID_SECTIONS = ['societes', 'candidats', 'concours', 'planification', 'horaires', 'classements', 'documents']
+const VALID_SECTIONS = ['societes', 'inscriptions', 'candidats', 'concours', 'planification', 'horaires', 'classements', 'documents']
 
 export default async function SectionPage({
   params,
