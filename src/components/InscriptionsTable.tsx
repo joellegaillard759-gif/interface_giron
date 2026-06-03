@@ -7,14 +7,14 @@ import { formatValue, type AirtableRecord } from './DataTable'
 
 const COLS: Array<{ key: string; label: string }> = [
   { key: 'Candidat.e',       label: 'Candidat·e' },
-  { key: 'Instrument [txt]', label: 'Instrument' },
-  { key: 'Société [txt]',    label: 'Société' },
+  { key: 'instrument [txt]', label: 'Instrument' },
+  { key: 'société [txt]',    label: 'Société' },
 ]
 
 const GROUPS = [
   { key: 'none',              label: 'Tous' },
   { key: 'Nom catégorie',     label: 'Catégorie' },
-  { key: 'Société [txt]',     label: 'Société' },
+  { key: 'société [txt]',     label: 'Société' },
   { key: 'Type de concours',  label: 'Type' },
 ]
 

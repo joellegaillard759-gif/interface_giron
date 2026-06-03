@@ -49,14 +49,13 @@ function CardCoordonnees({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState(rawStr(record.fields['Email']))
-  const [tel, setTel] = useState(rawStr(record.fields['Téléphone']))
-  const [adresse, setAdresse] = useState(rawStr(record.fields['Adresse']))
+  const [tel, setTel] = useState(rawStr(record.fields['Numéro de téléphone']))
+  const [adresse, setAdresse] = useState(rawStr(record.fields['Adresse (rue, numéro)']))
 
   useEffect(() => {
-    console.log('[Coordonnées] noms de champs disponibles:', Object.keys(record.fields))
     setEmail(rawStr(record.fields['Email']))
-    setTel(rawStr(record.fields['Téléphone']))
-    setAdresse(rawStr(record.fields['Adresse']))
+    setTel(rawStr(record.fields['Numéro de téléphone']))
+    setAdresse(rawStr(record.fields['Adresse (rue, numéro)']))
     setEditing(false)
     setError(null)
   }, [record.id])
@@ -76,8 +75,8 @@ function CardCoordonnees({
               id: record.id,
               fields: {
                 Email: email || null,
-                Téléphone: tel || null,
-                Adresse: adresse || null,
+                'Numéro de téléphone': tel || null,
+                'Adresse (rue, numéro)': adresse || null,
               },
             }],
           }),
@@ -173,9 +172,9 @@ function CardConcours({ record, base }: { record: AirtableRecord; base: Airtable
         <div>{formatValue(record.fields['Type de concours'])}</div>
 
         <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Hash size={14} strokeWidth={1.6} /> Statut
+          <Hash size={14} strokeWidth={1.6} /> Tranche d'âge
         </div>
-        <div>{formatValue(record.fields['Statut'])}</div>
+        <div>{formatValue(record.fields["Tranche d'âge"])}</div>
       </div>
     </div>
   )
@@ -188,7 +187,7 @@ function TabApercu({ record, base, onRecordUpdate }: {
   base: AirtableBase
   onRecordUpdate: (r: AirtableRecord) => void
 }) {
-  const contraintes = formatValue(record.fields['Contraintes horaires'])
+  const contraintes = formatValue(record.fields['Heures de passages inscriptions contraintes'])
   return (
     <div style={{ padding: '24px 32px 40px', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
       <CardCoordonnees record={record} base={base} onRecordUpdate={onRecordUpdate} />
@@ -217,21 +216,16 @@ function TabPartition({ record, base, onRecordUpdate }: {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [titre, setTitre] = useState(rawStr(record.fields['Titre']))
-  const [compositeur, setCompositeur] = useState(rawStr(record.fields['Compositeur']))
-  const [arrangeur, setArrangeur] = useState(rawStr(record.fields['Arrangeur']))
+  const [titre, setTitre] = useState(rawStr(record.fields['Titre de la pièce']))
 
   useEffect(() => {
-    console.log('[Partition] noms de champs disponibles:', Object.keys(record.fields))
-    setTitre(rawStr(record.fields['Titre']))
-    setCompositeur(rawStr(record.fields['Compositeur']))
-    setArrangeur(rawStr(record.fields['Arrangeur']))
+    setTitre(rawStr(record.fields['Titre de la pièce']))
     setEditing(false)
     setError(null)
   }, [record.id])
 
-  const partitionSoliste = record.fields['Partition de soliste']
-  const partitionPiano = record.fields['Partition avec piano']
+  const partitionSoliste = record.fields['Partition candidat rendue']
+  const partitionPiano = record.fields['Partition piano rendue']
 
   async function save() {
     if (!base.table_inscription) return
@@ -246,11 +240,7 @@ function TabPartition({ record, base, onRecordUpdate }: {
           body: JSON.stringify({
             records: [{
               id: record.id,
-              fields: {
-                Titre: titre || null,
-                Compositeur: compositeur || null,
-                Arrangeur: arrangeur || null,
-              },
+              fields: { 'Titre de la pièce': titre || null },
             }],
           }),
         }
@@ -301,14 +291,7 @@ function TabPartition({ record, base, onRecordUpdate }: {
             : <div>{titre}</div>}
 
           <div className="muted">Compositeur</div>
-          {editing
-            ? <input className="input" value={compositeur} onChange={e => setCompositeur(e.target.value)} />
-            : <div>{compositeur}</div>}
-
-          <div className="muted">Arrangeur</div>
-          {editing
-            ? <input className="input" value={arrangeur} onChange={e => setArrangeur(e.target.value)} />
-            : <div>{arrangeur}</div>}
+          <div>{formatValue(record.fields['texte compositeur'])}</div>
         </div>
       </div>
 
@@ -337,43 +320,11 @@ function TabPartition({ record, base, onRecordUpdate }: {
 
 // ─── Onglet Professeur ────────────────────────────────────────────────────────
 
-function TabProfesseur({ record, base }: { record: AirtableRecord; base: AirtableBase }) {
-  const [profFields, setProfFields] = useState<Record<string, unknown> | null>(null)
-  const [loading, setLoading] = useState(false)
+function TabProfesseur({ record }: { record: AirtableRecord }) {
+  const nom = formatValue(record.fields['Nom du professeur'])
+  const email = formatValue(record.fields['Email professeur'])
 
-  // Prefer lookup fields (Airtable rollup/lookup) over fetching the linked record
-  const hasLookup = (
-    record.fields['Professeur (Nom)'] !== undefined ||
-    record.fields['Professeur - Nom'] !== undefined
-  )
-  const profNom = formatValue(record.fields['Professeur (Nom)'] ?? record.fields['Professeur - Nom'])
-  const profEmail = formatValue(record.fields['Professeur (Email)'] ?? record.fields['Professeur - Email'])
-  const profTel = formatValue(record.fields['Professeur (Téléphone)'] ?? record.fields['Professeur - Téléphone'])
-
-  const profRaw = record.fields['Professeur']
-  const profId = Array.isArray(profRaw) && profRaw.length > 0
-    ? (typeof profRaw[0] === 'string'
-      ? profRaw[0]
-      : (profRaw[0] as { id?: string })?.id ?? null)
-    : null
-
-  useEffect(() => {
-    if (hasLookup || !profId || !base.table_personnes) return
-    let cancelled = false
-    setLoading(true)
-    fetch(`/api/airtable/${base.airtable_base_id}/${base.table_personnes}/${profId}`)
-      .then(r => r.json())
-      .then(data => { if (!cancelled && data.fields) setProfFields(data.fields) })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
-  }, [profId, base.airtable_base_id, base.table_personnes, hasLookup])
-
-  const displayNom = hasLookup ? profNom : formatValue(profFields?.['Nom'] ?? profFields?.['Name'])
-  const displayEmail = hasLookup ? profEmail : formatValue(profFields?.['Email'])
-  const displayTel = hasLookup ? profTel : formatValue(profFields?.['Téléphone'])
-
-  if (!profId && !hasLookup) {
+  if (nom === '—' && email === '—') {
     return (
       <div style={{ padding: '24px 32px 40px' }}>
         <div className="card">
@@ -391,28 +342,18 @@ function TabProfesseur({ record, base }: { record: AirtableRecord; base: Airtabl
         <div className="card-header">
           <div className="card-title">Professeur</div>
         </div>
-        {loading ? (
-          <div className="card-body"><span className="muted">Chargement…</span></div>
-        ) : (
-          <div className="card-body" style={{
-            display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 24, rowGap: 14, fontSize: 13.5,
-          }}>
-            <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <User size={14} strokeWidth={1.6} /> Nom
-            </div>
-            <div>{displayNom}</div>
-
-            <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Mail size={14} strokeWidth={1.6} /> Email
-            </div>
-            <div>{displayEmail}</div>
-
-            <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Phone size={14} strokeWidth={1.6} /> Téléphone
-            </div>
-            <div className="num">{displayTel}</div>
+        <div className="card-body" style={{
+          display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 24, rowGap: 14, fontSize: 13.5,
+        }}>
+          <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <User size={14} strokeWidth={1.6} /> Nom
           </div>
-        )}
+          <div>{nom}</div>
+          <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Mail size={14} strokeWidth={1.6} /> Email
+          </div>
+          <div>{email}</div>
+        </div>
       </div>
     </div>
   )
@@ -429,8 +370,8 @@ export default function CandidatDetail({ base, record, onRecordUpdate }: Candida
 
   const categorie = formatValue(record.fields['Nom catégorie'])
   const typeConcours = formatValue(record.fields['Type de concours'])
-  const instrument = formatValue(record.fields['Instrument [txt]'])
-  const societe = formatValue(record.fields['Société [txt]'])
+  const instrument = formatValue(record.fields['instrument [txt]'])
+  const societe = formatValue(record.fields['société [txt]'])
   const subtitleParts = [instrument, societe].filter(v => v !== '—')
 
   return (
@@ -491,7 +432,7 @@ export default function CandidatDetail({ base, record, onRecordUpdate }: Candida
         <TabPartition record={record} base={base} onRecordUpdate={onRecordUpdate} />
       )}
       {activeTab === 'professeur' && (
-        <TabProfesseur record={record} base={base} />
+        <TabProfesseur record={record} />
       )}
     </div>
   )
