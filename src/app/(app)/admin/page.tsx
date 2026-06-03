@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { ADMIN_EMAIL } from '@/lib/config'
+import StatusBadge from '@/components/StatusBadge'
 import SyncButton from './SyncButton'
 import InviteButton from './InviteButton'
 import type { AirtableBase } from '@/types'
@@ -9,7 +11,7 @@ export default async function AdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+  if (!user || user.email !== ADMIN_EMAIL) {
     redirect('/dashboard')
   }
 
@@ -45,18 +47,16 @@ export default async function AdminPage() {
             <tbody>
               {bases.map((base: AirtableBase) => (
                 <tr key={base.id} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{base.nom_concours || base.nom}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    <a href={`/base/${base.airtable_base_id}`} className="hover:text-blue-600 hover:underline">
+                      {base.nom_concours || base.nom}
+                    </a>
+                  </td>
                   <td className="px-4 py-3">
                     <InviteButton baseId={base.id} emails={base.access_emails ?? []} />
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      base.statut === 'Clôturé'
-                        ? 'bg-gray-100 text-gray-500'
-                        : 'bg-green-100 text-green-700'
-                    }`}>
-                      {base.statut ?? '—'}
-                    </span>
+                    <StatusBadge statut={base.statut} />
                   </td>
                   <td className="px-4 py-3 text-gray-400 text-xs">
                     {new Date(base.synced_at).toLocaleDateString('fr-CH', {

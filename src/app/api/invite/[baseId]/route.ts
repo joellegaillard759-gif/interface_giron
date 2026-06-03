@@ -1,20 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL!
+import { requireAdmin } from '@/lib/auth'
 
 export async function POST(_req: Request, { params }: { params: Promise<{ baseId: string }> }) {
   try {
+    const guard = await requireAdmin()
+    if (!guard.ok) return guard.response
+    const { adminSupabase } = guard
+
     const { baseId } = await params
-
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
-    }
-
-    const adminSupabase = createAdminClient()
 
     const { data: base, error: baseError } = await adminSupabase
       .from('airtable_bases')

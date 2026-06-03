@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { ADMIN_EMAIL } from '@/lib/config'
+import StatusBadge from '@/components/StatusBadge'
 import type { AirtableBase } from '@/types'
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL!
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -28,7 +28,6 @@ export default async function DashboardPage() {
     )
   }
 
-  // Si une seule base, redirection directe
   if (bases.length === 1) {
     redirect(`/base/${bases[0].airtable_base_id}`)
   }
@@ -51,19 +50,5 @@ export default async function DashboardPage() {
         ))}
       </div>
     </div>
-  )
-}
-
-function StatusBadge({ statut }: { statut: string | null }) {
-  const colors: Record<string, string> = {
-    'Clôturé': 'bg-gray-100 text-gray-500',
-    'En cours': 'bg-green-100 text-green-700',
-    'Inscriptions ouvertes': 'bg-blue-100 text-blue-700',
-  }
-  const color = statut ? colors[statut] ?? 'bg-gray-100 text-gray-500' : 'bg-gray-100 text-gray-500'
-  return (
-    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>
-      {statut ?? '—'}
-    </span>
   )
 }
