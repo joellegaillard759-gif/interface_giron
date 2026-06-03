@@ -100,3 +100,4 @@ scripts/
 - Icônes : **Lucide React** partout — `size={16}`, `strokeWidth={1.6}`
 - Couleurs : toujours via variables CSS (`var(--accent)`) — jamais de hex en dur
 - Tailwind : utilitaires de layout OK ; pour les couleurs et tailles, préférer les tokens
+- Champs Airtable : **ne jamais afficher un record ID** (format `recXXXXXX`). Les champs "linked record" retournent des IDs bruts — toujours utiliser le champ texte correspondant (lookup ou rollup). Exemples : `Nom catégorie` plutôt que `Catégorie`, `Société [txt]` plutôt que `Société`.

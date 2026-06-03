@@ -152,7 +152,7 @@ function CardConcours({ record, base }: { record: AirtableRecord; base: Airtable
         <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Building2 size={14} strokeWidth={1.6} /> Catégorie
         </div>
-        <div>{formatValue(record.fields['Catégorie'])}</div>
+        <div>{formatValue(record.fields['Nom catégorie'])}</div>
 
         <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <FileText size={14} strokeWidth={1.6} /> Type
@@ -395,10 +395,10 @@ export default function CandidatDetail({ base, record, onRecordUpdate }: Candida
   const { prenom, nom } = parseName(nomRaw)
   const initiales = ((nom[0] ?? '') + (prenom[0] ?? '')).toUpperCase()
 
-  const categorie = formatValue(record.fields['Catégorie'])
+  const categorie = formatValue(record.fields['Nom catégorie'])
   const typeConcours = formatValue(record.fields['Type de concours'])
   const instrument = formatValue(record.fields['Instrument'])
-  const societe = formatValue(record.fields['Société'])
+  const societe = formatValue(record.fields['Société [txt]'])
   const subtitleParts = [instrument, societe].filter(v => v !== '—')
 
   return (
