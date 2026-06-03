@@ -31,11 +31,13 @@ ALTER TABLE airtable_bases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_bases ENABLE ROW LEVEL SECURITY;
 
 -- Un utilisateur voit uniquement les bases auxquelles il est associé
+DROP POLICY IF EXISTS "users_see_own_bases" ON airtable_bases;
 CREATE POLICY "users_see_own_bases" ON airtable_bases
   FOR SELECT USING (
     id IN (SELECT base_id FROM user_bases WHERE user_id = auth.uid())
   );
 
 -- Un utilisateur voit uniquement ses propres associations
+DROP POLICY IF EXISTS "users_see_own_associations" ON user_bases;
 CREATE POLICY "users_see_own_associations" ON user_bases
   FOR SELECT USING (auth.uid() = user_id);

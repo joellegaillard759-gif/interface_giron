@@ -8,6 +8,7 @@ const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN!
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL!
 
 export async function POST() {
+  try {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -130,4 +131,9 @@ export async function POST() {
   }
 
   return NextResponse.json({ ok: true, created, updated, usersCreated })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e)
+    console.error('[sync]', message)
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
