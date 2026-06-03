@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useBaseName } from '@/hooks/useBaseName'
+import { useCandidatName } from '@/hooks/useCandidatName'
 
 const SECTION_LABELS: Record<string, string> = {
   societes: 'Sociétés',
@@ -25,7 +26,11 @@ export default function Topbar({ userEmail }: TopbarProps) {
   const currentBaseId = baseMatch?.[1] ?? null
   const currentSection = pathname.match(/^\/base\/[^/]+\/([^/]+)/)?.[1] ?? null
 
+  const inscriptionMatch = pathname.match(/^\/base\/([^/]+)\/inscriptions\/([^/]+)$/)
+  const inscriptionRecordId = inscriptionMatch?.[2] ?? null
+
   const baseName = useBaseName(currentBaseId)
+  const candidatName = useCandidatName(inscriptionMatch ? currentBaseId : null, inscriptionRecordId)
 
   const initials = userEmail.slice(0, 2).toUpperCase()
 
@@ -36,6 +41,13 @@ export default function Topbar({ userEmail }: TopbarProps) {
     crumbs = [{ label: 'Mes concours' }]
   } else if (pathname.startsWith('/admin')) {
     crumbs = [{ label: 'Administration' }]
+  } else if (inscriptionMatch && currentBaseId) {
+    crumbs = [
+      { label: 'Mes concours', href: '/dashboard' },
+      { label: baseName ?? '…', href: `/base/${currentBaseId}` },
+      { label: 'Inscriptions', href: `/base/${currentBaseId}/inscriptions` },
+      { label: candidatName ?? '…' },
+    ]
   } else if (currentBaseId) {
     crumbs = [{ label: 'Mes concours', href: '/dashboard' }]
     if (currentSection) {

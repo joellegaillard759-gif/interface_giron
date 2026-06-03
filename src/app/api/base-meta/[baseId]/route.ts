@@ -12,7 +12,7 @@ export async function GET(
 
   const { data } = await supabase
     .from('airtable_bases')
-    .select('nom, nom_concours, statut')
+    .select('nom, nom_concours, statut, table_inscription')
     .eq('airtable_base_id', baseId)
     .single()
 
