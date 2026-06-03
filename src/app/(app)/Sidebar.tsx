@@ -16,7 +16,7 @@ const GLOBAL_NAV = [
 
 const SECTION_NAV = [
   { key: 'societes',      label: 'Sociétés',      icon: Building2 },
-  { key: 'candidats',     label: 'Candidats',     icon: Users },
+  { key: 'inscriptions',  label: 'Inscriptions',  icon: Users },
   { key: 'concours',      label: 'Concours',      icon: Trophy },
   { key: 'planification', label: 'Planification', icon: Calendar },
   { key: 'horaires',      label: 'Horaires',      icon: Clock },
@@ -106,7 +106,7 @@ export default function Sidebar({ isAdmin, userEmail }: SidebarProps) {
                 href={`/base/${currentBaseId}/${key}`}
                 label={label}
                 icon={<Icon size={16} strokeWidth={1.6} />}
-                active={currentSection === key || (!currentSection && key === 'candidats' && pathname === `/base/${currentBaseId}`)}
+                active={currentSection === key || (!currentSection && key === 'inscriptions' && pathname === `/base/${currentBaseId}`)}
               />
             ))}
           </>

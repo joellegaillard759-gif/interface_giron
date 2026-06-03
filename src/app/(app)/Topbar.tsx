@@ -6,7 +6,7 @@ import { useBaseName } from '@/hooks/useBaseName'
 
 const SECTION_LABELS: Record<string, string> = {
   societes: 'Sociétés',
-  candidats: 'Candidats',
+  inscriptions: 'Inscriptions',
   concours: 'Concours',
   planification: 'Planification',
   horaires: 'Horaires',

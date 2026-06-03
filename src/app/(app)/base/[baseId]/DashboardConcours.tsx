@@ -10,7 +10,7 @@ type TableKey = 'table_societes' | 'table_inscription' | 'table_concours' | 'tab
 
 const SECTIONS: Array<{ key: string; label: string; icon: React.ElementType; tableKey: TableKey }> = [
   { key: 'societes',      label: 'Sociétés',      icon: Building2,  tableKey: 'table_societes' },
-  { key: 'candidats',     label: 'Candidats',     icon: Users,      tableKey: 'table_inscription' },
+  { key: 'inscriptions',  label: 'Inscriptions',  icon: Users,      tableKey: 'table_inscription' },
   { key: 'concours',      label: 'Concours',      icon: Trophy,     tableKey: 'table_concours' },
   { key: 'planification', label: 'Planification', icon: Calendar,   tableKey: 'table_concours' },
   { key: 'horaires',      label: 'Horaires',      icon: Clock,      tableKey: 'table_passages' },
@@ -19,7 +19,7 @@ const SECTIONS: Array<{ key: string; label: string; icon: React.ElementType; tab
 ]
 
 const STAT_SECTIONS = [
-  { key: 'candidats', label: 'Candidats', icon: Users, tableKey: 'table_inscription' as TableKey },
+  { key: 'inscriptions', label: 'Inscriptions', icon: Users, tableKey: 'table_inscription' as TableKey },
   { key: 'societes',  label: 'Sociétés',  icon: Building2, tableKey: 'table_societes' as TableKey },
   { key: 'concours',  label: 'Concours',  icon: Trophy, tableKey: 'table_concours' as TableKey },
 ]

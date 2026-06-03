@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Building2, Users, Trophy, Calendar, Clock, Star, FileText } from 'lucide-react'
 import DataTable from '@/components/DataTable'
+import InscriptionsTable from '@/components/InscriptionsTable'
 import DetailPanel from '@/components/DetailPanel'
 import StatusBadge from '@/components/StatusBadge'
 import type { AirtableBase } from '@/types'
@@ -12,7 +13,7 @@ type TableKey = 'table_societes' | 'table_inscription' | 'table_concours' | 'tab
 
 const SECTIONS: Array<{ key: string; label: string; icon: React.ElementType; tableKey: TableKey }> = [
   { key: 'societes',      label: 'Sociétés',      icon: Building2, tableKey: 'table_societes' },
-  { key: 'candidats',     label: 'Candidats',     icon: Users,     tableKey: 'table_inscription' },
+  { key: 'inscriptions',  label: 'Inscriptions',  icon: Users,     tableKey: 'table_inscription' },
   { key: 'concours',      label: 'Concours',      icon: Trophy,    tableKey: 'table_concours' },
   { key: 'planification', label: 'Planification', icon: Calendar,  tableKey: 'table_concours' },
   { key: 'horaires',      label: 'Horaires',      icon: Clock,     tableKey: 'table_passages' },
@@ -95,6 +96,13 @@ export default function BaseView({ base, section }: BaseViewProps) {
           <div style={{ padding: '80px 0', textAlign: 'center', color: 'var(--ink-400)', fontSize: '13px' }}>
             Table non configurée pour cette section.
           </div>
+        ) : section === 'inscriptions' ? (
+          <InscriptionsTable
+            records={records}
+            loading={loading}
+            onRowClick={setSelected}
+            selectedId={selected?.id}
+          />
         ) : (
           <DataTable
             records={records}
