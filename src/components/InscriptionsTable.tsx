@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { formatValue, type AirtableRecord } from './DataTable'
 
-const COLS = ['Candidat.e', 'Instrument', 'Société']
+const COLS: Array<{ key: string; label: string }> = [
+  { key: 'Candidat.e',       label: 'Candidat·e' },
+  { key: 'Instrument [txt]', label: 'Instrument' },
+  { key: 'Société [txt]',    label: 'Société' },
+]
 
 const GROUPS = [
   { key: 'none',              label: 'Tous' },
@@ -32,7 +36,7 @@ export default function InscriptionsTable({ records, loading, onRowClick, select
     if (search.trim()) {
       const q = search.toLowerCase()
       result = result.filter(r =>
-        COLS.some(col => String(r.fields[col] ?? '').toLowerCase().includes(q))
+        COLS.some(c => String(r.fields[c.key] ?? '').toLowerCase().includes(q))
       )
     }
     return [...result].sort((a, b) =>
@@ -108,7 +112,7 @@ export default function InscriptionsTable({ records, loading, onRowClick, select
             <table className="table" style={{ minWidth: '400px', width: '100%' }}>
               <thead>
                 <tr>
-                  {COLS.map(col => <th key={col}>{col}</th>)}
+                  {COLS.map(c => <th key={c.key}>{c.label}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -150,12 +154,12 @@ export default function InscriptionsTable({ records, loading, onRowClick, select
                           background: selectedId === record.id ? 'var(--accent-50)' : undefined,
                         }}
                       >
-                        {COLS.map(col => (
+                        {COLS.map(c => (
                           <td
-                            key={col}
+                            key={c.key}
                             style={{ whiteSpace: 'nowrap', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis' }}
                           >
-                            {formatValue(record.fields[col])}
+                            {formatValue(record.fields[c.key])}
                           </td>
                         ))}
                       </tr>

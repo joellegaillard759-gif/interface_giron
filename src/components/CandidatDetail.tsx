@@ -31,6 +31,13 @@ function isPdf(val: unknown): val is Array<{ url: string; filename: string }> {
 
 // ─── Card Coordonnées ─────────────────────────────────────────────────────────
 
+function rawStr(val: unknown): string {
+  if (val === null || val === undefined) return ''
+  if (typeof val === 'string') return val
+  if (typeof val === 'number') return String(val)
+  return ''
+}
+
 function CardCoordonnees({
   record, base, onRecordUpdate,
 }: {
@@ -40,22 +47,25 @@ function CardCoordonnees({
 }) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [email, setEmail] = useState(formatValue(record.fields['Email']))
-  const [tel, setTel] = useState(formatValue(record.fields['Téléphone']))
-  const [adresse, setAdresse] = useState(formatValue(record.fields['Adresse']))
-  const [numMembre, setNumMembre] = useState(formatValue(record.fields['Numéro de membre']))
+  const [error, setError] = useState<string | null>(null)
+  const [email, setEmail] = useState(rawStr(record.fields['Email']))
+  const [tel, setTel] = useState(rawStr(record.fields['Téléphone']))
+  const [adresse, setAdresse] = useState(rawStr(record.fields['Adresse']))
+  const [numMembre, setNumMembre] = useState(rawStr(record.fields['Numéro de membre']))
 
   useEffect(() => {
-    setEmail(formatValue(record.fields['Email']))
-    setTel(formatValue(record.fields['Téléphone']))
-    setAdresse(formatValue(record.fields['Adresse']))
-    setNumMembre(formatValue(record.fields['Numéro de membre']))
+    setEmail(rawStr(record.fields['Email']))
+    setTel(rawStr(record.fields['Téléphone']))
+    setAdresse(rawStr(record.fields['Adresse']))
+    setNumMembre(rawStr(record.fields['Numéro de membre']))
     setEditing(false)
+    setError(null)
   }, [record.id])
 
   async function save() {
     if (!base.table_inscription) return
     setSaving(true)
+    setError(null)
     try {
       const res = await fetch(
         `/api/airtable/${base.airtable_base_id}/${base.table_inscription}`,
@@ -66,18 +76,24 @@ function CardCoordonnees({
             records: [{
               id: record.id,
               fields: {
-                Email: email,
-                Téléphone: tel,
-                Adresse: adresse,
-                'Numéro de membre': numMembre,
+                Email: email || null,
+                Téléphone: tel || null,
+                Adresse: adresse || null,
+                'Numéro de membre': numMembre || null,
               },
             }],
           }),
         }
       )
       const data = await res.json()
-      if (data.records?.[0]) onRecordUpdate(data.records[0])
-      setEditing(false)
+      if (data.records?.[0]) {
+        onRecordUpdate(data.records[0])
+        setEditing(false)
+      } else {
+        setError(data.error?.message ?? 'Erreur Airtable')
+      }
+    } catch {
+      setError('Erreur réseau')
     } finally {
       setSaving(false)
     }
@@ -100,6 +116,11 @@ function CardCoordonnees({
           <button className="btn sm" onClick={() => setEditing(true)}>Éditer</button>
         )}
       </div>
+      {error && (
+        <div style={{ padding: '8px 18px', fontSize: 12, color: 'var(--accent)', background: 'var(--accent-50)' }}>
+          {error}
+        </div>
+      )}
       <div className="card-body" style={{
         display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 24, rowGap: 14, fontSize: 13.5,
       }}>
@@ -203,15 +224,17 @@ function TabPartition({ record, base, onRecordUpdate }: {
 }) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [titre, setTitre] = useState(formatValue(record.fields['Titre']))
-  const [compositeur, setCompositeur] = useState(formatValue(record.fields['Compositeur']))
-  const [arrangeur, setArrangeur] = useState(formatValue(record.fields['Arrangeur']))
+  const [error, setError] = useState<string | null>(null)
+  const [titre, setTitre] = useState(rawStr(record.fields['Titre']))
+  const [compositeur, setCompositeur] = useState(rawStr(record.fields['Compositeur']))
+  const [arrangeur, setArrangeur] = useState(rawStr(record.fields['Arrangeur']))
 
   useEffect(() => {
-    setTitre(formatValue(record.fields['Titre']))
-    setCompositeur(formatValue(record.fields['Compositeur']))
-    setArrangeur(formatValue(record.fields['Arrangeur']))
+    setTitre(rawStr(record.fields['Titre']))
+    setCompositeur(rawStr(record.fields['Compositeur']))
+    setArrangeur(rawStr(record.fields['Arrangeur']))
     setEditing(false)
+    setError(null)
   }, [record.id])
 
   const partitionSoliste = record.fields['Partition de soliste']
@@ -220,6 +243,7 @@ function TabPartition({ record, base, onRecordUpdate }: {
   async function save() {
     if (!base.table_inscription) return
     setSaving(true)
+    setError(null)
     try {
       const res = await fetch(
         `/api/airtable/${base.airtable_base_id}/${base.table_inscription}`,
@@ -229,14 +253,24 @@ function TabPartition({ record, base, onRecordUpdate }: {
           body: JSON.stringify({
             records: [{
               id: record.id,
-              fields: { Titre: titre, Compositeur: compositeur, Arrangeur: arrangeur },
+              fields: {
+                Titre: titre || null,
+                Compositeur: compositeur || null,
+                Arrangeur: arrangeur || null,
+              },
             }],
           }),
         }
       )
       const data = await res.json()
-      if (data.records?.[0]) onRecordUpdate(data.records[0])
-      setEditing(false)
+      if (data.records?.[0]) {
+        onRecordUpdate(data.records[0])
+        setEditing(false)
+      } else {
+        setError(data.error?.message ?? 'Erreur Airtable')
+      }
+    } catch {
+      setError('Erreur réseau')
     } finally {
       setSaving(false)
     }
@@ -260,6 +294,11 @@ function TabPartition({ record, base, onRecordUpdate }: {
             <button className="btn sm" onClick={() => setEditing(true)}>Éditer</button>
           )}
         </div>
+        {error && (
+          <div style={{ padding: '8px 18px', fontSize: 12, color: 'var(--accent)', background: 'var(--accent-50)' }}>
+            {error}
+          </div>
+        )}
         <div className="card-body" style={{
           display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 24, rowGap: 14, fontSize: 13.5,
         }}>
